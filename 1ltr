@@ -1,0 +1,52 @@
+// Pin definitions
+
+#include <Servo.h>
+
+Servo myservo;
+
+const int servoPin = 5;    // GPIO pin for solenoid valve
+const int buttonPin = 4;           // GPIO pin for button
+
+// Variables
+unsigned long lastMillis = 0; // Adjust this value based on your flow sensor's specifications
+boolean filling = false;
+
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP);
+  myservo.attach(servoPin);
+
+  Serial.begin(9600);
+}
+
+
+void loop() {
+  if (digitalRead(buttonPin) == LOW && !filling) {
+    filling = true;
+    lastMillis = millis();
+    Serial.println("Filling started.");
+  }
+
+  if (filling) {
+    unsigned long currentMillis = millis();
+    if (currentMillis - lastMillis >= 1000) {
+      On();
+      delay(1000);
+      Off();
+      lastMillis = currentMillis;
+      }
+    }
+  }
+
+void On(){
+  myservo.write(0);
+  delay(500);
+  myservo.write(90);
+  delay(500);
+  }
+
+void Off(){
+  myservo.write(180);
+  delay(500);
+  myservo.write(90);
+  delay(500);
+  }
