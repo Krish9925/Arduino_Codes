@@ -1,0 +1,61 @@
+#include <ESP8266WiFi.h>
+#include <Servo.h>
+
+// Pin definitions
+const int flowSensorPin = 14;      // GPIO pin for flow sensor
+const int buttonPin = 4;          // GPIO pin for button
+const int servoPin = 5;           // GPIO pin for servo motor
+
+// Variables
+volatile int flowPulses = 0;
+float flowRate = 0.0;
+float totalVolume = 0.0;
+const float targetVolume = 100;    // Target volume in liters
+const float pulsesPerLiter = 7.5; // Adjust this value based on your flow sensor's specifications
+boolean filling = false;
+
+// Servo setup
+Servo myservo;
+
+void ICACHE_RAM_ATTR countPulse() { // Use ICACHE_RAM_ATTR to place ISR in IRAM
+  if (filling) {
+    flowPulses++;
+  }
+}
+
+void setup() {
+  pinMode(flowSensorPin, INPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+  myservo.attach(servoPin);
+
+  Serial.begin(9600);
+
+  attachInterrupt(digitalPinToInterrupt(flowSensorPin), countPulse, RISING);
+}
+
+void loop() {
+  
+  if (digitalRead(buttonPin) == LOW && !filling) {
+    filling = true;
+    Serial.println("90");
+    On();
+    delay(100);
+    Off();
+    Serial.println("Filling started.");
+  }
+}
+
+
+void On() {
+  myservo.write(0);
+  delay(200);
+  myservo.write(90);
+  delay(200);
+  }
+
+void Off(){
+  myservo.write(180);
+  delay(200);
+  myservo.write(90);
+  delay(200);
+  }
